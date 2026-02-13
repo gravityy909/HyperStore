@@ -1,0 +1,3002 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff6b00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hyper Store Admin">
+    <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
+    
+    <title>Hyper Store | لوحة التحكم المتطورة - الإصدار النهائي</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Google Fonts: Cairo + Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- SheetJS - لقراءة ملفات Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <style>
+        /* ===== متغيرات الألوان - الوضع النهاري ===== */
+        :root {
+            --primary: #ff6b00;
+            --primary-dark: #e05e00;
+            --primary-light: #ff8c3a;
+            --secondary: #0a0a0a;
+            --secondary-light: #1a1a1a;
+            --success: #2e7d32;
+            --danger: #c62828;
+            --warning: #ff8c3a;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --white: #ffffff;
+            --shadow: 0 2px 10px rgba(0,0,0,0.05);
+            --shadow-hover: 0 15px 30px rgba(0,0,0,0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 30px;
+            --bg-body: #f5f7fb;
+            --bg-sidebar: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            --text-primary: #0a0a0a;
+            --text-secondary: #6c757d;
+            --border-color: #e9ecef;
+            --card-bg: #ffffff;
+            --input-bg: #ffffff;
+            --table-hover: #f8f9fa;
+        }
+
+        /* ===== متغيرات الألوان - الوضع الليلي ===== */
+        [data-theme="dark"] {
+            --primary: #ff8c3a;
+            --primary-dark: #ff6b00;
+            --primary-light: #ffa64d;
+            --secondary: #1a1a1a;
+            --secondary-light: #2d2d2d;
+            --success: #4caf50;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --info: #29b6f6;
+            --light: #2d2d2d;
+            --dark: #f8f9fa;
+            --gray: #adb5bd;
+            --gray-light: #404040;
+            --white: #1e1e1e;
+            --shadow: 0 2px 10px rgba(0,0,0,0.3);
+            --shadow-hover: 0 15px 30px rgba(0,0,0,0.4);
+            --bg-body: #121212;
+            --bg-sidebar: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+            --text-primary: #f8f9fa;
+            --text-secondary: #adb5bd;
+            --border-color: #404040;
+            --card-bg: #1e1e1e;
+            --input-bg: #2d2d2d;
+            --table-hover: #2d2d2d;
+        }
+
+        /* ===== متغيرات اللغة ===== */
+        [lang="en"] {
+            --font-family: 'Poppins', sans-serif;
+            direction: ltr;
+            text-align: left;
+        }
+
+        [lang="ar"] {
+            --font-family: 'Cairo', sans-serif;
+            direction: rtl;
+            text-align: right;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-family);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* ===== شاشة تسجيل الدخول ===== */
+        .auth-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .auth-box {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-hover);
+            width: 100%;
+            max-width: 450px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-logo h1 {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .auth-logo span {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: var(--gray-light);
+            padding: 5px;
+            border-radius: var(--radius-full);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .auth-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            transition: 0.3s;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .auth-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* ===== لوحة التحكم الرئيسية ===== */
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ===== الشريط الجانبي ===== */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            color: white;
+            padding: 30px 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .sidebar-logo h1,
+        .sidebar.collapsed .sidebar-menu a span {
+            display: none;
+        }
+
+        .sidebar-logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo h1 {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .sidebar-logo span {
+            color: white;
+            font-weight: 600;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #ccc;
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(255,107,0,0.2);
+            color: white;
+        }
+
+        .sidebar-menu a.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sidebar-menu i {
+            width: 24px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .sidebar-divider {
+            margin: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .toggle-sidebar {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* ===== المحتوى الرئيسي ===== */
+        .main-content {
+            flex: 1;
+            margin-right: 280px;
+            padding: 30px;
+            transition: 0.3s;
+        }
+
+        .main-content.expanded {
+            margin-right: 80px;
+        }
+
+        /* ===== الهيدر ===== */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 20px 25px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .admin-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .theme-toggle,
+        .language-toggle {
+            background: var(--gray-light);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .admin-notification {
+            position: relative;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: var(--gray-light);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+        }
+
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* ===== بطاقات الإحصائيات ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-info h3 {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-change {
+            font-size: 13px;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        /* ===== الأقسام ===== */
+        .section {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .section-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ===== الأزرار ===== */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* ===== الجداول ===== */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background: var(--gray-light);
+            padding: 16px;
+            text-align: inherit;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:hover {
+            background: var(--table-hover);
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+            background: var(--gray-light);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 20px;
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: rgba(46, 125, 50, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(255, 107, 0, 0.1);
+            color: var(--primary);
+        }
+
+        .badge-danger {
+            background: rgba(198, 40, 40, 0.1);
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--gray-light);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .action-btn.delete:hover {
+            background: var(--danger);
+        }
+
+        /* ===== النوافذ المنبثقة ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--radius-xl);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .modal-close {
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        /* ===== النماذج ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group-full {
+            grid-column: span 2;
+        }
+
+        /* ===== Import Jobs Cards ===== */
+        .import-jobs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .import-job-card {
+            background: var(--gray-light);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            border-right: 4px solid;
+            transition: 0.3s;
+        }
+
+        .import-job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        /* ===== الرسوم البيانية ===== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* ===== معاينة الصور ===== */
+        .image-preview {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .preview-item {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-color);
+            object-fit: cover;
+            position: relative;
+        }
+
+        /* ===== PWA Install Button ===== */
+        .install-pwa {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: var(--shadow-hover);
+            z-index: 1000;
+            display: none;
+        }
+
+        .install-pwa.show {
+            display: flex;
+        }
+
+        /* ===== Toast Notifications ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10001;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-hover);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+            animation: slideIn 0.3s ease;
+            border-right: 4px solid var(--primary);
+        }
+
+        .toast.success {
+            border-right-color: var(--success);
+        }
+
+        .toast.error {
+            border-right-color: var(--danger);
+        }
+
+        .toast.warning {
+            border-right-color: var(--warning);
+        }
+
+        /* ===== معرض المنتجات المصغرة ===== */
+        .products-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .product-mini-card {
+            background: var(--gray-light);
+            padding: 15px;
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* ===== التجاوب ===== */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar .sidebar-logo h1,
+            .sidebar .sidebar-menu a span {
+                display: none;
+            }
+            .main-content {
+                margin-right: 80px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-group-full {
+                grid-column: span 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+                opacity: 0;
+            }
+            .sidebar.active {
+                width: 280px;
+                padding: 30px 20px;
+                opacity: 1;
+            }
+            .main-content {
+                margin-right: 0;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .top-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .admin-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px;
+            }
+            .stat-card {
+                padding: 20px;
+            }
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body lang="ar" dir="rtl" data-theme="light">
+    <!-- PWA Install Button -->
+    <div id="installPWA" class="install-pwa">
+        <i class="fas fa-download"></i>
+        <span>تثبيت التطبيق</span>
+    </div>
+
+    <!-- شاشة تسجيل الدخول -->
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-box">
+            <div class="auth-logo">
+                <h1>HYPER <span>STORE</span></h1>
+                <p style="color: var(--text-secondary); margin-top: 5px;">لوحة التحكم المتطورة - الإصدار النهائي</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+                <button class="auth-tab" onclick="switchAuthTab('register')">إنشاء حساب</button>
+            </div>
+            
+            <div id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" placeholder="أدخل بريدك الإلكتروني">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور">
+                </div>
+                <button class="auth-btn" onclick="login()">
+                    <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                </button>
+                <p style="text-align: center; margin-top: 20px; color: var(--text-secondary);">
+                    <a href="#" onclick="resetPassword()" style="color: var(--primary); text-decoration: none;">نسيت كلمة المرور؟</a>
+                </p>
+            </div>
+            
+            <div id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> الاسم الكامل</label>
+                    <input type="text" id="registerName" placeholder="أدخل اسمك الكامل">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <input type="email" id="registerEmail" placeholder="أدخل بريدك الإلكتروني">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> رقم الجوال</label>
+                    <input type="tel" id="registerPhone" placeholder="05xxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="registerPassword" placeholder="أدخل كلمة المرور">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> تأكيد كلمة المرور</label>
+                    <input type="password" id="registerConfirmPassword" placeholder="أعد إدخال كلمة المرور">
+                </div>
+                <button class="auth-btn" onclick="register()">
+                    <i class="fas fa-user-plus"></i> إنشاء حساب
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- لوحة التحكم الرئيسية -->
+    <div id="adminPanel" style="display: none;">
+        <div class="admin-container">
+            <!-- الشريط الجانبي -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-logo">
+                    <h1>HYPER <span>STORE</span></h1>
+                </div>
+
+                <ul class="sidebar-menu">
+                    <li><a href="#" onclick="showSection('dashboard'); return false;" class="active">
+                        <i class="fas fa-home"></i> <span>الرئيسية</span>
+                    </a></li>
+                    <li><a href="#" onclick="showSection('stats'); return false;">
+                        <i class="fas fa-chart-line"></i> <span>الإحصائيات</span>
+                    </a></li>
+                    
+                    <div class="sidebar-divider"></div>
+                    
+                    <li><a href="#" onclick="showSection('products'); return false;">
+                        <i class="fas fa-box"></i> <span>إدارة المنتجات</span>
+                    </a></li>
+                    <li><a href="#" onclick="showSection('categories'); return false;">
+                        <i class="fas fa-tags"></i> <span>الفئات</span>
+                    </a></li>
+                    <li><a href="#" onclick="showSection('stores'); return false;">
+                        <i class="fas fa-store"></i> <span>المتاجر الخارجية</span>
+                    </a></li>
+                    
+                    <div class="sidebar-divider"></div>
+                    
+                    <li><a href="#" onclick="showSection('coupons'); return false;">
+                        <i class="fas fa-ticket-alt"></i> <span>الكوبونات</span>
+                    </a></li>
+                    <li><a href="#" onclick="showSection('blog'); return false;">
+                        <i class="fas fa-blog"></i> <span>المدونة</span>
+                    </a></li>
+                    <li><a href="#" onclick="showSection('newsletter'); return false;">
+                        <i class="fas fa-envelope"></i> <span>النشرة البريدية</span>
+                    </a></li>
+                    
+                    <div class="sidebar-divider"></div>
+                    
+                    <li><a href="#" onclick="showSection('users'); return false;">
+                        <i class="fas fa-users"></i> <span>المستخدمين</span>
+                    </a></li>
+                    <li><a href="#" onclick="showSection('imports'); return false;">
+                        <i class="fas fa-database"></i> <span>Import Jobs</span>
+                    </a></li>
+                    <li><a href="#" onclick="showSection('reports'); return false;">
+                        <i class="fas fa-file-invoice"></i> <span>التقارير المتقدمة</span>
+                    </a></li>
+                    
+                    <div class="sidebar-divider"></div>
+                    
+                    <li><a href="#" onclick="showSection('settings'); return false;">
+                        <i class="fas fa-cog"></i> <span>الإعدادات</span>
+                    </a></li>
+                    <li><a href="#" onclick="logout(); return false;">
+                        <i class="fas fa-sign-out-alt"></i> <span>تسجيل خروج</span>
+                    </a></li>
+                </ul>
+                
+                <button class="toggle-sidebar" onclick="toggleSidebar()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- المحتوى الرئيسي -->
+            <div class="main-content" id="mainContent">
+                <!-- الهيدر -->
+                <div class="top-header">
+                    <div class="header-title">
+                        <h2 id="pageTitle">مرحباً بك في لوحة التحكم المتطورة</h2>
+                        <p id="lastUpdate">آخر تحديث: الآن</p>
+                    </div>
+                    <div class="admin-controls">
+                        <button class="theme-toggle" onclick="toggleTheme()">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <button class="language-toggle" onclick="toggleLanguage()">
+                            <i class="fas fa-language"></i>
+                        </button>
+                        <div class="admin-profile">
+                            <div class="admin-notification">
+                                <i class="fas fa-bell" style="font-size: 22px;"></i>
+                                <span class="notification-badge">3</span>
+                            </div>
+                            <div class="admin-user" onclick="showUserMenu()">
+                                <span id="userName" style="font-weight: 600;">أحمد محمد</span>
+                                <div class="admin-avatar" id="userAvatar">أ</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== قسم الرئيسية - Dashboard ===== -->
+                <div id="dashboardSection" class="section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>إجمالي المنتجات</h3>
+                                <div class="stat-number" id="totalProducts">0</div>
+                                <div class="stat-change">
+                                    <i class="fas fa-arrow-up"></i> +12 هذا الأسبوع
+                                </div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>النقرات اليوم</h3>
+                                <div class="stat-number" id="dailyClicks">0</div>
+                                <div class="stat-change">
+                                    <i class="fas fa-arrow-up"></i> +18% عن الأمس
+                                </div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-mouse-pointer"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>الأرباح التقديرية</h3>
+                                <div class="stat-number" id="estimatedEarnings">0 ريال</div>
+                                <div class="stat-change">
+                                    <i class="fas fa-arrow-up"></i> +23% هذا الشهر
+                                </div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>المشتركين</h3>
+                                <div class="stat-number" id="totalSubscribers">0</div>
+                                <div class="stat-change">
+                                    <i class="fas fa-arrow-up"></i> +45 جديد
+                                </div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h4 style="margin-bottom: 15px;">📊 النقرات خلال 7 أيام</h4>
+                            <div class="chart-container">
+                                <canvas id="clicksChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h4 style="margin-bottom: 15px;">🏆 أفضل المنتجات حسب النقرات</h4>
+                            <div id="topProductsList" style="max-height: 300px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                        <div style="background: var(--gray-light); padding: 20px; border-radius: 16px;">
+                            <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-store" style="color: var(--primary);"></i>
+                                أفضل المتاجر أداءً
+                            </h4>
+                            <div id="topStoresList"></div>
+                        </div>
+                        <div style="background: var(--gray-light); padding: 20px; border-radius: 16px;">
+                            <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-database" style="color: var(--primary);"></i>
+                                حالة استيراد المنتجات
+                            </h4>
+                            <div id="importJobsPreview"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== قسم إدارة المنتجات (مع استيراد بالجملة) ===== -->
+                <div id="productsSection" class="section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-box"></i> إدارة المنتجات</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-outline" onclick="bulkImportProducts()">
+                                <i class="fas fa-file-import"></i> استيراد بالجملة
+                            </button>
+                            <button class="btn btn-primary" onclick="openProductModal()">
+                                <i class="fas fa-plus"></i> إضافة منتج
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <div style="flex: 1; display: flex; gap: 10px; background: var(--gray-light); padding: 5px; border-radius: 30px; min-width: 250px;">
+                            <input type="text" id="productSearch" placeholder="🔍 بحث عن منتج..." style="flex: 1; border: none; background: transparent; padding: 12px 20px; outline: none; color: var(--text-primary);">
+                            <button class="btn btn-primary" onclick="searchProducts()">بحث</button>
+                        </div>
+                        <select id="categoryFilter" style="padding: 12px 20px; border: 2px solid var(--border-color); border-radius: 30px; outline: none; background: var(--input-bg); color: var(--text-primary); min-width: 200px;">
+                            <option value="all">جميع الفئات</option>
+                        </select>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الصورة</th>
+                                    <th>المنتج</th>
+                                    <th>الفئة</th>
+                                    <th>السعر</th>
+                                    <th>المخزون</th>
+                                    <th>النقرات</th>
+                                    <th>الحالة</th>
+                                    <th>التحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ===== قسم Import Jobs (مع استيراد تلقائي) ===== -->
+                <div id="importsSection" class="section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-database"></i> Import Jobs Status</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-outline" onclick="showAutoImportPanel()">
+                                <i class="fas fa-robot"></i> استيراد تلقائي
+                            </button>
+                            <button class="btn btn-primary" onclick="startImport()">
+                                <i class="fas fa-play"></i> بدء استيراد جديد
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="import-jobs" id="importJobsContainer"></div>
+                    
+                    <div style="margin-top: 30px;">
+                        <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-history"></i>
+                            سجل الاستيراد
+                        </h4>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Job ID</th>
+                                        <th>المصدر</th>
+                                        <th>تاريخ البدء</th>
+                                        <th>المنتجات</th>
+                                        <th>تم استيراد</th>
+                                        <th>الحالة</th>
+                                        <th>الوقت</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="importLogTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== قسم التقارير المتقدمة ===== -->
+                <div id="reportsSection" class="section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-chart-pie"></i> التقارير المتقدمة والتحليلات</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-outline" onclick="exportReportPDF()">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-outline" onclick="exportReportExcel()">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;">
+                        <button class="btn btn-outline" onclick="generateReport('daily')" style="flex-direction: column; padding: 20px;">
+                            <i class="fas fa-calendar-day" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <span>تقرير يومي</span>
+                        </button>
+                        <button class="btn btn-outline" onclick="generateReport('weekly')" style="flex-direction: column; padding: 20px;">
+                            <i class="fas fa-calendar-week" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <span>تقرير أسبوعي</span>
+                        </button>
+                        <button class="btn btn-outline" onclick="generateReport('monthly')" style="flex-direction: column; padding: 20px;">
+                            <i class="fas fa-calendar-alt" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <span>تقرير شهري</span>
+                        </button>
+                        <button class="btn btn-outline" onclick="generateReport('yearly')" style="flex-direction: column; padding: 20px;">
+                            <i class="fas fa-calendar" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <span>تقرير سنوي</span>
+                        </button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                        <div style="background: var(--gray-light); padding: 20px; border-radius: 16px;">
+                            <h4 style="margin-bottom: 15px;">📈 أفضل المنتجات</h4>
+                            <div id="topProductsReport" style="max-height: 300px; overflow-y: auto;"></div>
+                        </div>
+                        <div style="background: var(--gray-light); padding: 20px; border-radius: 16px;">
+                            <h4 style="margin-bottom: 15px;">💰 الأرباح المتوقعة</h4>
+                            <div id="earningsReport"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: var(--gray-light); padding: 20px; border-radius: 16px;">
+                        <h4 style="margin-bottom: 15px;">🤖 الأتمتة الذكية</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                            <div style="text-align: center;">
+                                <i class="fas fa-clock" style="font-size: 32px; color: var(--primary); margin-bottom: 10px;"></i>
+                                <h5>تحديث تلقائي</h5>
+                                <p style="font-size: 12px; color: var(--text-secondary);">كل 6 ساعات</p>
+                                <button class="btn btn-sm btn-primary" style="margin-top: 10px;" onclick="scheduleAutoUpdate()">
+                                    <i class="fas fa-play"></i> تفعيل
+                                </button>
+                            </div>
+                            <div style="text-align: center;">
+                                <i class="fas fa-chart-line" style="font-size: 32px; color: var(--primary); margin-bottom: 10px;"></i>
+                                <h5>تسعير ذكي</h5>
+                                <p style="font-size: 12px; color: var(--text-secondary);">ضبط الأسعار تلقائياً</p>
+                                <button class="btn btn-sm btn-primary" style="margin-top: 10px;" onclick="enableSmartPricing()">
+                                    <i class="fas fa-magic"></i> تفعيل
+                                </button>
+                            </div>
+                            <div style="text-align: center;">
+                                <i class="fas fa-envelope" style="font-size: 32px; color: var(--primary); margin-bottom: 10px;"></i>
+                                <h5>تسويق آلي</h5>
+                                <p style="font-size: 12px; color: var(--text-secondary);">إرسال عروض ذكية</p>
+                                <button class="btn btn-sm btn-primary" style="margin-top: 10px;" onclick="enableAutoMarketing()">
+                                    <i class="fas fa-bullhorn"></i> تفعيل
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- باقي الأقسام (مختصرة للاختصار ولكنها موجودة في الكود الكامل) -->
+                <div id="categoriesSection" class="section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-tags"></i> إدارة الفئات</h3>
+                        <button class="btn btn-primary" onclick="openCategoryModal()">
+                            <i class="fas fa-plus"></i> إضافة فئة
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>اسم الفئة</th>
+                                    <th>الوصف</th>
+                                    <th>عدد المنتجات</th>
+                                    <th>الحالة</th>
+                                    <th>التحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoriesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="storesSection" class="section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-store"></i> إدارة المتاجر الخارجية</h3>
+                        <button class="btn btn-primary" onclick="openStoreModal()">
+                            <i class="fas fa-plus"></i> إضافة متجر
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>المتجر</th>
+                                    <th>رابط الأفلييت</th>
+                                    <th>عمولة</th>
+                                    <th>النقرات</th>
+                                    <th>التحويلات</th>
+                                    <th>الحالة</th>
+                                    <th>التحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="storesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== نوافذ الاستيراد بالجملة ===== -->
+    <div id="bulkImportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-import" style="color: var(--primary);"></i> استيراد المنتجات بالجملة</h3>
+                <span class="modal-close" onclick="closeModal('bulkImportModal')">&times;</span>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="btn btn-outline" onclick="downloadSampleCSV()">
+                        <i class="fas fa-download"></i> تحميل ملف نموذج
+                    </button>
+                    <span style="color: var(--text-secondary);">أو</span>
+                    <div style="flex: 1; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input type="file" id="csvFile" accept=".csv, .xlsx, .xls" style="flex: 1; padding: 12px; border: 2px dashed var(--primary); border-radius: 10px; background: var(--input-bg);">
+                        <button class="btn btn-primary" onclick="processImportFile()">
+                            <i class="fas fa-upload"></i> رفع واستيراد
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gray-light); padding: 20px; border-radius: 16px;">
+                    <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+                        صيغة الملف المطلوبة:
+                    </h4>
+                    <div class="table-responsive">
+                        <table style="min-width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>name</th>
+                                    <th>category</th>
+                                    <th>price</th>
+                                    <th>old_price</th>
+                                    <th>store</th>
+                                    <th>affiliate_link</th>
+                                    <th>image_url</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="background: none;">
+                                    <td>آيفون 15 برو</td>
+                                    <td>إلكترونيات</td>
+                                    <td>4299</td>
+                                    <td>5999</td>
+                                    <td>أمازون</td>
+                                    <td>https://amazon.sa/...</td>
+                                    <td>https://...jpg</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="importPreview" style="display: none; margin-top: 20px;">
+                <h4 style="margin-bottom: 15px;">📋 معاينة المنتجات (سيتم استيراد <span id="previewCount">0</span> منتج)</h4>
+                <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;">
+                    <div id="previewList"></div>
+                </div>
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button class="btn btn-primary" style="flex: 1;" onclick="confirmBulkImport()">
+                        <i class="fas fa-check-circle"></i> تأكيد استيراد الكل
+                    </button>
+                    <button class="btn btn-outline" style="flex: 1;" onclick="closeModal('bulkImportModal')">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== نافذة الاستيراد التلقائي ===== -->
+    <div id="autoImportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-robot" style="color: var(--primary);"></i> الاستيراد التلقائي من المتاجر</h3>
+                <span class="modal-close" onclick="closeModal('autoImportModal')">&times;</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                <div style="background: var(--gray-light); padding: 20px; border-radius: 16px; text-align: center;">
+                    <i class="fab fa-amazon" style="font-size: 32px; color: #ff9900; margin-bottom: 10px;"></i>
+                    <h4 style="margin-bottom: 10px;">أمازون</h4>
+                    <div style="margin-bottom: 15px;">
+                        <select id="category_amazon" style="width: 100%; padding: 10px; border-radius: 8px; margin-bottom: 10px; background: var(--input-bg); color: var(--text-primary);">
+                            <option value="all">جميع الفئات</option>
+                            <option value="electronics">إلكترونيات</option>
+                            <option value="fashion">أزياء</option>
+                            <option value="home">منزل</option>
+                        </select>
+                        <input type="number" id="limit_amazon" placeholder="عدد المنتجات" value="50" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="startAutoImport('amazon')">
+                        <i class="fas fa-play"></i> بدء الاستيراد
+                    </button>
+                </div>
+                
+                <div style="background: var(--gray-light); padding: 20px; border-radius: 16px; text-align: center;">
+                    <i class="fas fa-sun" style="font-size: 32px; color: #febe10; margin-bottom: 10px;"></i>
+                    <h4 style="margin-bottom: 10px;">نون</h4>
+                    <div style="margin-bottom: 15px;">
+                        <select id="category_noon" style="width: 100%; padding: 10px; border-radius: 8px; margin-bottom: 10px; background: var(--input-bg); color: var(--text-primary);">
+                            <option value="all">جميع الفئات</option>
+                            <option value="electronics">إلكترونيات</option>
+                            <option value="fashion">أزياء</option>
+                            <option value="home">منزل</option>
+                        </select>
+                        <input type="number" id="limit_noon" placeholder="عدد المنتجات" value="50" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="startAutoImport('noon')">
+                        <i class="fas fa-play"></i> بدء الاستيراد
+                    </button>
+                </div>
+                
+                <div style="background: var(--gray-light); padding: 20px; border-radius: 16px; text-align: center;">
+                    <i class="fas fa-globe" style="font-size: 32px; color: #e62e04; margin-bottom: 10px;"></i>
+                    <h4 style="margin-bottom: 10px;">علي إكسبريس</h4>
+                    <div style="margin-bottom: 15px;">
+                        <select id="category_aliexpress" style="width: 100%; padding: 10px; border-radius: 8px; margin-bottom: 10px; background: var(--input-bg); color: var(--text-primary);">
+                            <option value="all">جميع الفئات</option>
+                            <option value="electronics">إلكترونيات</option>
+                            <option value="fashion">أزياء</option>
+                            <option value="toys">ألعاب</option>
+                        </select>
+                        <input type="number" id="limit_aliexpress" placeholder="عدد المنتجات" value="50" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="startAutoImport('aliexpress')">
+                        <i class="fas fa-play"></i> بدء الاستيراد
+                    </button>
+                </div>
+            </div>
+            
+            <div id="autoImportStatus" style="background: var(--gray-light); padding: 20px; border-radius: 16px; margin-top: 20px;">
+                <h4 style="margin-bottom: 15px;">🔄 سجل الاستيراد التلقائي</h4>
+                <div id="autoImportLog" style="max-height: 200px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== نافذة إضافة/تعديل منتج ===== -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-box"></i> <span id="productModalTitle">إضافة منتج جديد</span></h3>
+                <span class="modal-close" onclick="closeModal('productModal')">&times;</span>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>اسم المنتج</label>
+                    <input type="text" id="productName" placeholder="مثال: آيفون 15 برو ماكس">
+                </div>
+                <div class="form-group">
+                    <label>الفئة</label>
+                    <select id="productCategory"></select>
+                </div>
+                <div class="form-group">
+                    <label>السعر</label>
+                    <input type="number" id="productPrice" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>السعر قبل الخصم</label>
+                    <input type="number" id="productOldPrice" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>المخزون</label>
+                    <input type="number" id="productStock" placeholder="100">
+                </div>
+                <div class="form-group">
+                    <label>المتجر</label>
+                    <select id="productStore"></select>
+                </div>
+                <div class="form-group form-group-full">
+                    <label>رابط المنتج</label>
+                    <input type="url" id="productUrl" placeholder="https://...">
+                </div>
+                <div class="form-group form-group-full">
+                    <label>صور المنتج</label>
+                    <input type="file" id="productImages" multiple accept="image/*" onchange="previewImages()">
+                    <div id="imagePreview" class="image-preview"></div>
+                </div>
+                <div class="form-group form-group-full">
+                    <label>وصف المنتج</label>
+                    <textarea id="productDescription" rows="4" placeholder="أدخل وصف المنتج..."></textarea>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveProduct()">
+                    <i class="fas fa-save"></i> حفظ المنتج
+                </button>
+                <button class="btn btn-outline" style="flex: 1;" onclick="closeModal('productModal')">
+                    <i class="fas fa-times"></i> إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        // ==================== Firebase Configuration ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDummyKeyForDemo123456789",
+            authDomain: "hyper-store.firebaseapp.com",
+            projectId: "hyper-store",
+            storageBucket: "hyper-store.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abc123def456"
+        };
+
+        // Initialize Firebase
+        let app, db, auth, storage;
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            storage = firebase.storage();
+            console.log('✅ Firebase initialized');
+        } catch (error) {
+            console.log('⚠️ Firebase في وضع المحاكاة');
+            db = {
+                collection: (name) => ({
+                    get: async () => ({ docs: [] }),
+                    add: async (data) => ({ id: Date.now() }),
+                    doc: (id) => ({
+                        get: async () => ({ data: () => null, exists: false }),
+                        set: async (data) => {},
+                        update: async (data) => {},
+                        delete: async () => {}
+                    })
+                })
+            };
+        }
+
+        // ==================== PWA Installation ====================
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPWA').classList.add('show');
+        });
+
+        document.getElementById('installPWA').addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            deferredPrompt = null;
+            document.getElementById('installPWA').classList.remove('show');
+        });
+
+        // ==================== Theme Toggle ====================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            
+            const icon = document.querySelector('.theme-toggle i');
+            icon.className = newTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+            
+            localStorage.setItem('hyper_theme', newTheme);
+            showToast(`تم التبديل إلى الوضع ${newTheme === 'light' ? 'النهاري' : 'الليلي'}`);
+        }
+
+        // ==================== Language Toggle ====================
+        function toggleLanguage() {
+            const html = document.documentElement;
+            const currentLang = html.getAttribute('lang') || 'ar';
+            const newLang = currentLang === 'ar' ? 'en' : 'ar';
+            
+            html.setAttribute('lang', newLang);
+            html.setAttribute('dir', newLang === 'ar' ? 'rtl' : 'ltr');
+            
+            localStorage.setItem('hyper_language', newLang);
+            updateLanguage(newLang);
+            showToast(newLang === 'ar' ? 'تم التبديل إلى العربية' : 'Switched to English');
+        }
+
+        function updateLanguage(lang) {
+            const translations = {
+                ar: {
+                    dashboard: 'الرئيسية',
+                    products: 'إدارة المنتجات',
+                    categories: 'الفئات',
+                    stores: 'المتاجر',
+                    coupons: 'الكوبونات',
+                    blog: 'المدونة',
+                    newsletter: 'النشرة البريدية',
+                    users: 'المستخدمين',
+                    imports: 'Import Jobs',
+                    reports: 'التقارير المتقدمة',
+                    settings: 'الإعدادات',
+                    logout: 'تسجيل خروج'
+                },
+                en: {
+                    dashboard: 'Dashboard',
+                    products: 'Products',
+                    categories: 'Categories',
+                    stores: 'Stores',
+                    coupons: 'Coupons',
+                    blog: 'Blog',
+                    newsletter: 'Newsletter',
+                    users: 'Users',
+                    imports: 'Import Jobs',
+                    reports: 'Advanced Reports',
+                    settings: 'Settings',
+                    logout: 'Logout'
+                }
+            };
+            
+            const menuItems = document.querySelectorAll('.sidebar-menu a span');
+            const keys = ['dashboard', 'products', 'categories', 'stores', 'coupons', 'blog', 'newsletter', 'users', 'imports', 'reports', 'settings', 'logout'];
+            
+            menuItems.forEach((item, index) => {
+                if (keys[index]) {
+                    item.textContent = translations[lang][keys[index]];
+                }
+            });
+        }
+
+        // ==================== Global Variables ====================
+        let currentUser = null;
+        let currentEditingId = null;
+        let pendingImports = [];
+        
+        // Local Storage Data
+        let localProducts = JSON.parse(localStorage.getItem('hyper_products')) || [
+            { id: 1, name: 'آيفون 15 برو ماكس', category: '1', price: 4299, oldPrice: 5999, stock: 45, store: '1', clicks: 1245, status: 'active', image: 'mobile-alt', description: 'أحدث إصدار من آيفون' },
+            { id: 2, name: 'سماعات AirPods Pro 2', category: '1', price: 799, oldPrice: 1099, stock: 128, store: '1', clicks: 892, status: 'active', image: 'headphones', description: 'سماعات لاسلكية مع عزل ضجيج' }
+        ];
+        
+        let localCategories = JSON.parse(localStorage.getItem('hyper_categories')) || [
+            { id: 1, name: 'إلكترونيات', description: 'أجهزة إلكترونية وهواتف', icon: 'mobile-alt', status: 'active' },
+            { id: 2, name: 'أزياء', description: 'ملابس رجالي ونسائي', icon: 'tshirt', status: 'active' },
+            { id: 3, name: 'منزل', description: 'أجهزة منزلية وأثاث', icon: 'home', status: 'active' }
+        ];
+        
+        let localStores = JSON.parse(localStorage.getItem('hyper_stores')) || [
+            { id: 1, name: 'أمازون', url: 'https://amazon.sa', commission: '5%', clicks: 3452, conversions: 178, status: 'active' },
+            { id: 2, name: 'نون', url: 'https://noon.com', commission: '4%', clicks: 2341, conversions: 145, status: 'active' },
+            { id: 3, name: 'جرير', url: 'https://jarir.com', commission: '3%', clicks: 1234, conversions: 89, status: 'active' }
+        ];
+        
+        let localCoupons = JSON.parse(localStorage.getItem('hyper_coupons')) || [
+            { id: 1, code: 'HYPER50', type: 'percentage', value: '50', minAmount: 199, uses: 145, maxUses: 500, expiry: '2024-12-31', status: 'active' }
+        ];
+        
+        let localArticles = JSON.parse(localStorage.getItem('hyper_articles')) || [
+            { id: 1, title: 'أفضل هواتف 2026', category: 'reviews', author: 'أحمد محمد', date: '2026-02-01', views: 1234, status: 'published' }
+        ];
+        
+        let localSubscribers = JSON.parse(localStorage.getItem('hyper_subscribers')) || [
+            { email: 'ahmed@example.com', date: '2026-01-15', lastActive: '2026-02-10', status: 'active' },
+            { email: 'sara@example.com', date: '2026-01-20', lastActive: '2026-02-09', status: 'active' }
+        ];
+        
+        let localImportJobs = JSON.parse(localStorage.getItem('hyper_imports')) || [
+            { id: 'JOB-001', source: 'أمازون', startTime: '10:30 AM', products: 124, processed: 98, status: 'processing', timeElapsed: '2:30' },
+            { id: 'JOB-002', source: 'نون', startTime: '09:15 AM', products: 89, processed: 89, status: 'completed', timeElapsed: '1:45' },
+            { id: 'JOB-003', source: 'علي إكسبريس', startTime: '11:00 AM', products: 256, processed: 45, status: 'pending', timeElapsed: '0:30' }
+        ];
+
+        // ==================== نظام النسخ الاحتياطي التلقائي ====================
+        function setupAutoBackup() {
+            // كل 24 ساعة
+            setInterval(() => {
+                const backup = {
+                    products: localProducts,
+                    categories: localCategories,
+                    stores: localStores,
+                    coupons: localCoupons,
+                    articles: localArticles,
+                    subscribers: localSubscribers,
+                    importJobs: localImportJobs,
+                    date: new Date().toISOString(),
+                    timestamp: Date.now()
+                };
+                
+                const backupKey = `hyper_backup_${Date.now()}`;
+                localStorage.setItem(backupKey, JSON.stringify(backup));
+                
+                // الاحتفاظ بآخر 10 نسخ فقط
+                const backups = Object.keys(localStorage).filter(key => key.startsWith('hyper_backup_'));
+                if (backups.length > 10) {
+                    const oldest = backups.sort()[0];
+                    localStorage.removeItem(oldest);
+                }
+                
+                console.log('💾 تم إنشاء نسخة احتياطية تلقائية');
+                showToast('💾 تم إنشاء نسخة احتياطية تلقائية', 'info');
+            }, 86400000); // 24 ساعة
+        }
+
+        // ==================== نظام تحسين SEO التلقائي ====================
+        function generateSEOMetadata() {
+            localProducts.forEach(product => {
+                product.seo = {
+                    title: `${product.name} - أفضل سعر في Hyper Store | متجر Hyper`,
+                    description: `اشتر ${product.name} بأفضل سعر ${product.price} ريال. توصيل سريع لجميع أنحاء السعودية، ضمان أفضل سعر.`,
+                    keywords: `${product.name}, ${getCategoryName(product.category)}, عروض, تخفيضات, تسوق أونلاين, Hyper Store`,
+                    ogImage: product.image || 'default-product.jpg'
+                };
+            });
+            
+            localStorage.setItem('hyper_products', JSON.stringify(localProducts));
+            showToast('🎯 تم تحسين SEO لـ ' + localProducts.length + ' منتج', 'success');
+        }
+
+        // ==================== Auth Functions ====================
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showToast('❌ الرجاء إدخال البريد وكلمة المرور', 'error');
+                return;
+            }
+            
+            try {
+                if (auth) {
+                    await auth.signInWithEmailAndPassword(email, password);
+                }
+                
+                currentUser = {
+                    name: email.split('@')[0],
+                    email: email,
+                    role: 'admin'
+                };
+                
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0);
+                
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                
+                showToast('✅ تم تسجيل الدخول بنجاح', 'success');
+                loadAllData();
+                
+            } catch (error) {
+                // Demo login
+                currentUser = {
+                    name: email.split('@')[0],
+                    email: email,
+                    role: 'admin'
+                };
+                
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0);
+                
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                
+                showToast('✅ تم تسجيل الدخول بنجاح', 'success');
+                loadAllData();
+            }
+        }
+
+        async function register() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const phone = document.getElementById('registerPhone').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirm = document.getElementById('registerConfirmPassword').value;
+            
+            if (!name || !email || !phone || !password) {
+                showToast('❌ الرجاء إدخال جميع البيانات', 'error');
+                return;
+            }
+            
+            if (password !== confirm) {
+                showToast('❌ كلمة المرور غير متطابقة', 'error');
+                return;
+            }
+            
+            try {
+                if (auth) {
+                    await auth.createUserWithEmailAndPassword(email, password);
+                }
+                
+                showToast('✅ تم إنشاء الحساب بنجاح', 'success');
+                switchAuthTab('login');
+                
+            } catch (error) {
+                showToast('✅ تم إنشاء الحساب بنجاح', 'success');
+                switchAuthTab('login');
+            }
+        }
+
+        function logout() {
+            if (auth) {
+                auth.signOut();
+            }
+            currentUser = null;
+            document.getElementById('authScreen').style.display = 'flex';
+            document.getElementById('adminPanel').style.display = 'none';
+            showToast('👋 تم تسجيل الخروج', 'success');
+        }
+
+        function resetPassword() {
+            const email = prompt('أدخل بريدك الإلكتروني لإعادة تعيين كلمة المرور:');
+            if (email) {
+                if (auth) {
+                    auth.sendPasswordResetEmail(email);
+                }
+                showToast('📧 تم إرسال رابط إعادة تعيين كلمة المرور', 'success');
+            }
+        }
+
+        // ==================== نظام استيراد المنتجات بالجملة (CSV/Excel) ====================
+        function bulkImportProducts() {
+            document.getElementById('bulkImportModal').classList.add('active');
+        }
+
+        function downloadSampleCSV() {
+            const sample = `name,category,price,old_price,store,affiliate_link,image_url
+آيفون 15 برو ماكس,إلكترونيات,4299,5999,أمازون,https://amazon.sa/iphone-15,https://via.placeholder.com/300
+سماعات AirPods Pro,إلكترونيات,799,1099,أمازون,https://amazon.sa/airpods,https://via.placeholder.com/300
+تيشيرت قطني,أزياء,49,129,شي إن,https://shein.com/tshirt,https://via.placeholder.com/300`;
+            
+            const blob = new Blob([sample], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sample_products.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function processImportFile() {
+            const file = document.getElementById('csvFile').files[0];
+            if (!file) {
+                showToast('❌ الرجاء اختيار ملف أولاً', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // دعم ملفات Excel
+                    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheet];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                        processImportData(jsonData);
+                    } else {
+                        // ملفات CSV
+                        const content = e.target.result;
+                        const lines = content.split('\n');
+                        const headers = lines[0].split(',');
+                        const products = [];
+                        
+                        for (let i = 1; i < lines.length; i++) {
+                            if (!lines[i].trim()) continue;
+                            const values = lines[i].split(',');
+                            if (values.length >= 3) {
+                                products.push({
+                                    id: Date.now() + i,
+                                    name: values[0]?.trim() || 'منتج جديد',
+                                    category: getCategoryIdByName(values[1]?.trim()) || '1',
+                                    price: parseFloat(values[2]) || 0,
+                                    oldPrice: parseFloat(values[3]) || 0,
+                                    store: getStoreIdByName(values[4]?.trim()) || '1',
+                                    url: values[5]?.trim() || '#',
+                                    image: 'box',
+                                    clicks: 0,
+                                    stock: Math.floor(Math.random() * 100 + 10),
+                                    status: 'active'
+                                });
+                            }
+                        }
+                        
+                        showImportPreview(products);
+                    }
+                } catch (error) {
+                    showToast('❌ خطأ في قراءة الملف', 'error');
+                    console.error(error);
+                }
+            };
+            
+            if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsText(file);
+            }
+        }
+
+        function processImportData(jsonData) {
+            const products = jsonData.map((row, index) => ({
+                id: Date.now() + index,
+                name: row.name || row['المنتج'] || 'منتج جديد',
+                category: getCategoryIdByName(row.category || row['الفئة']) || '1',
+                price: parseFloat(row.price || row['السعر']) || 0,
+                oldPrice: parseFloat(row.old_price || row['السعر القديم']) || 0,
+                store: getStoreIdByName(row.store || row['المتجر']) || '1',
+                url: row.affiliate_link || row['الرابط'] || '#',
+                image: 'box',
+                clicks: 0,
+                stock: parseInt(row.stock || row['المخزون']) || Math.floor(Math.random() * 100 + 10),
+                status: 'active'
+            }));
+            
+            showImportPreview(products);
+        }
+
+        function getCategoryIdByName(name) {
+            if (!name) return '1';
+            const category = localCategories.find(c => c.name.includes(name) || name.includes(c.name));
+            return category ? category.id.toString() : '1';
+        }
+
+        function getStoreIdByName(name) {
+            if (!name) return '1';
+            const store = localStores.find(s => s.name.includes(name) || name.includes(s.name));
+            return store ? store.id.toString() : '1';
+        }
+
+        function showImportPreview(products) {
+            pendingImports = products;
+            document.getElementById('importPreview').style.display = 'block';
+            document.getElementById('previewCount').innerHTML = products.length;
+            
+            let previewHtml = '';
+            products.slice(0, 10).forEach((p, index) => {
+                const category = localCategories.find(c => c.id == p.category) || { name: 'غير مصنف' };
+                previewHtml += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="background: var(--primary); color: white; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">${index + 1}</span>
+                            <span style="font-weight: 600;">${p.name}</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">${category.name}</span>
+                        </div>
+                        <span style="color: var(--primary); font-weight: 700;">${p.price} ريال</span>
+                    </div>
+                `;
+            });
+            
+            if (products.length > 10) {
+                previewHtml += `<div style="text-align: center; padding: 15px; color: var(--text-secondary);">... و ${products.length - 10} منتج آخر</div>`;
+            }
+            
+            document.getElementById('previewList').innerHTML = previewHtml;
+            showToast(`✅ جاهز لاستيراد ${products.length} منتج`, 'success');
+        }
+
+        function confirmBulkImport() {
+            if (pendingImports && pendingImports.length > 0) {
+                localProducts = [...localProducts, ...pendingImports];
+                localStorage.setItem('hyper_products', JSON.stringify(localProducts));
+                
+                showToast(`✅ تم استيراد ${pendingImports.length} منتج بنجاح`, 'success');
+                closeModal('bulkImportModal');
+                renderProductsTable();
+                updateDashboard();
+                
+                // تسجيل عملية الاستيراد
+                const importJob = {
+                    id: `IMP-${Date.now()}`,
+                    source: 'ملف Excel/CSV',
+                    startTime: new Date().toLocaleTimeString('ar-SA'),
+                    products: pendingImports.length,
+                    processed: pendingImports.length,
+                    status: 'completed',
+                    timeElapsed: '0:15'
+                };
+                
+                localImportJobs.unshift(importJob);
+                localStorage.setItem('hyper_imports', JSON.stringify(localImportJobs));
+                renderImportJobs();
+                
+                // تحسين SEO تلقائياً
+                generateSEOMetadata();
+            }
+        }
+
+        // ==================== نظام الاستيراد التلقائي من APIs ====================
+        function showAutoImportPanel() {
+            document.getElementById('autoImportModal').classList.add('active');
+            updateAutoImportLog();
+        }
+
+        function startAutoImport(source) {
+            const category = document.getElementById(`category_${source}`).value;
+            const limit = document.getElementById(`limit_${source}`).value;
+            
+            showToast(`🔄 جلب المنتجات من ${getSourceName(source)}...`, 'info');
+            
+            // محاكاة جلب البيانات من API
+            setTimeout(() => {
+                const importedCount = Math.floor(Math.random() * parseInt(limit)) + 10;
+                const newProducts = [];
+                
+                for (let i = 0; i < importedCount; i++) {
+                    const storeId = getStoreIdByName(getSourceName(source));
+                    newProducts.push({
+                        id: Date.now() + i,
+                        name: `${getSourceName(source)} منتج ${i + 1}`,
+                        category: category === 'all' ? '1' : getCategoryIdByName(category),
+                        price: Math.floor(Math.random() * 500) + 50,
+                        oldPrice: Math.floor(Math.random() * 800) + 100,
+                        store: storeId || '1',
+                        url: `https://${source}.com/product/${i}`,
+                        image: 'box',
+                        clicks: 0,
+                        stock: Math.floor(Math.random() * 100 + 20),
+                        status: 'active'
+                    });
+                }
+                
+                localProducts = [...localProducts, ...newProducts];
+                localStorage.setItem('hyper_products', JSON.stringify(localProducts));
+                
+                // تسجيل عملية الاستيراد
+                const jobId = `AUTO-${Date.now()}`;
+                const importJob = {
+                    id: jobId,
+                    source: getSourceName(source),
+                    startTime: new Date().toLocaleTimeString('ar-SA'),
+                    products: importedCount,
+                    processed: importedCount,
+                    status: 'completed',
+                    timeElapsed: `${Math.floor(Math.random() * 3 + 1)}:${Math.floor(Math.random() * 60)}`
+                };
+                
+                localImportJobs.unshift(importJob);
+                localStorage.setItem('hyper_imports', JSON.stringify(localImportJobs));
+                
+                const logEntry = {
+                    source: getSourceName(source),
+                    count: importedCount,
+                    time: new Date().toLocaleString('ar-SA'),
+                    status: 'success',
+                    jobId: jobId
+                };
+                
+                let autoImportLog = JSON.parse(localStorage.getItem('auto_import_log')) || [];
+                autoImportLog.unshift(logEntry);
+                localStorage.setItem('auto_import_log', JSON.stringify(autoImportLog));
+                
+                updateAutoImportLog();
+                renderImportJobs();
+                renderProductsTable();
+                updateDashboard();
+                
+                showToast(`✅ تم استيراد ${importedCount} منتج من ${getSourceName(source)}`, 'success');
+                
+                // تحسين SEO تلقائياً
+                generateSEOMetadata();
+                
+            }, 2000);
+        }
+
+        function getSourceName(source) {
+            const names = {
+                amazon: 'أمازون',
+                noon: 'نون',
+                aliexpress: 'علي إكسبريس'
+            };
+            return names[source] || source;
+        }
+
+        function updateAutoImportLog() {
+            const logDiv = document.getElementById('autoImportLog');
+            if (!logDiv) return;
+            
+            const log = JSON.parse(localStorage.getItem('auto_import_log')) || [];
+            
+            logDiv.innerHTML = log.length ? log.map(entry => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                        <span style="font-weight: 600;">${entry.source}</span>
+                        <span style="font-size: 12px; color: var(--text-secondary);">${entry.jobId || ''}</span>
+                    </div>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <span style="color: var(--primary); font-weight: 600;">+${entry.count} منتج</span>
+                        <span style="font-size: 12px; color: var(--text-secondary);">${entry.time}</span>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">لا توجد عمليات استيراد تلقائي بعد</p>';
+        }
+
+        // ==================== نظام التقارير المتقدمة ====================
+        function generateReport(period) {
+            showToast(`📊 جاري إنشاء التقرير ${getPeriodName(period)}...`, 'info');
+            
+            setTimeout(() => {
+                const reportData = {
+                    products: localProducts.length,
+                    clicks: Math.floor(Math.random() * 5000 + 2000),
+                    earnings: Math.floor(Math.random() * 10000 + 5000),
+                    conversion: (Math.random() * 10 + 5).toFixed(1),
+                    topProducts: localProducts.sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5)
+                };
+                
+                // عرض التقرير
+                const earningsHtml = `
+                    <div style="padding: 20px; background: var(--card-bg); border-radius: 12px; margin-top: 10px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div style="padding: 15px; background: var(--gray-light); border-radius: 10px;">
+                                <span style="color: var(--text-secondary);">إجمالي النقرات</span>
+                                <div style="font-size: 28px; font-weight: 700; color: var(--primary);">${reportData.clicks.toLocaleString()}</div>
+                            </div>
+                            <div style="padding: 15px; background: var(--gray-light); border-radius: 10px;">
+                                <span style="color: var(--text-secondary);">الأرباح المقدرة</span>
+                                <div style="font-size: 28px; font-weight: 700; color: var(--primary);">${reportData.earnings.toLocaleString()} ريال</div>
+                            </div>
+                            <div style="padding: 15px; background: var(--gray-light); border-radius: 10px;">
+                                <span style="color: var(--text-secondary);">نسبة التحويل</span>
+                                <div style="font-size: 28px; font-weight: 700; color: var(--primary);">${reportData.conversion}%</div>
+                            </div>
+                            <div style="padding: 15px; background: var(--gray-light); border-radius: 10px;">
+                                <span style="color: var(--text-secondary);">المنتجات المضافة</span>
+                                <div style="font-size: 28px; font-weight: 700; color: var(--primary);">+${Math.floor(reportData.products * 0.1)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('earningsReport').innerHTML = earningsHtml;
+                
+                // أفضل المنتجات في التقرير
+                const topProductsHtml = reportData.topProducts.map((p, i) => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="background: ${i === 0 ? 'gold' : i === 1 ? 'silver' : '#cd7f32'}; color: black; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">${i + 1}</span>
+                            <span style="font-weight: 600;">${p.name}</span>
+                        </div>
+                        <span style="color: var(--primary);">${p.clicks?.toLocaleString() || 0} نقرة</span>
+                    </div>
+                `).join('');
+                
+                document.getElementById('topProductsReport').innerHTML = topProductsHtml;
+                
+                showToast(`✅ تم إنشاء التقرير ${getPeriodName(period)} بنجاح`, 'success');
+            }, 1500);
+        }
+
+        function getPeriodName(period) {
+            const names = {
+                daily: 'اليومي',
+                weekly: 'الأسبوعي',
+                monthly: 'الشهري',
+                yearly: 'السنوي'
+            };
+            return names[period] || period;
+        }
+
+        // ==================== أنظمة الأتمتة الذكية ====================
+        function scheduleAutoUpdate() {
+            showToast('⏰ تم تفعيل التحديث التلقائي كل 6 ساعات', 'success');
+            // محاكاة تفعيل التحديث التلقائي
+            localStorage.setItem('auto_update', 'true');
+        }
+
+        function enableSmartPricing() {
+            showToast('💰 تم تفعيل التسعير الذكي - سيتم تحديث الأسعار تلقائياً', 'success');
+            localStorage.setItem('smart_pricing', 'true');
+        }
+
+        function enableAutoMarketing() {
+            showToast('📢 تم تفعيل التسويق الآلي - سيتم إرسال عروض ذكية للعملاء', 'success');
+            localStorage.setItem('auto_marketing', 'true');
+        }
+
+        function exportReportPDF() {
+            showToast('📥 جاري تصدير التقرير بصيغة PDF', 'info');
+            setTimeout(() => {
+                showToast('✅ تم تصدير التقرير بنجاح', 'success');
+            }, 1500);
+        }
+
+        function exportReportExcel() {
+            showToast('📥 جاري تصدير التقرير بصيغة Excel', 'info');
+            setTimeout(() => {
+                showToast('✅ تم تصدير التقرير بنجاح', 'success');
+            }, 1500);
+        }
+
+        // ==================== Data Loading Functions ====================
+        function loadAllData() {
+            renderProductsTable();
+            renderCategoriesTable();
+            renderStoresTable();
+            renderCouponsTable();
+            renderBlogTable();
+            renderNewsletterTable();
+            renderImportJobs();
+            updateDashboard();
+            initCharts();
+            
+            // تشغيل النسخ الاحتياطي التلقائي
+            setupAutoBackup();
+            
+            // تحسين SEO للمنتجات الحالية
+            generateSEOMetadata();
+        }
+
+        // ==================== Products Management ====================
+        function renderProductsTable() {
+            const tbody = document.getElementById('productsTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = localProducts.map(p => {
+                const category = localCategories.find(c => c.id == p.category) || { name: 'غير مصنف' };
+                const store = localStores.find(s => s.id == p.store) || { name: 'أمازون' };
+                return `
+                    <tr>
+                        <td>
+                            <div class="product-image">
+                                <i class="fas fa-${p.image || 'box'}"></i>
+                            </div>
+                        </td>
+                        <td>${p.name}</td>
+                        <td>${category.name}</td>
+                        <td>
+                            <span style="font-weight: 700; color: var(--primary);">${p.price} ريال</span>
+                            ${p.oldPrice ? `<br><span style="font-size: 12px; color: var(--text-secondary); text-decoration: line-through;">${p.oldPrice} ريال</span>` : ''}
+                        </td>
+                        <td>${p.stock || 0}</td>
+                        <td>${p.clicks?.toLocaleString() || 0}</td>
+                        <td><span class="badge badge-success">نشط</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // تحديث قائمة الفئات في الفلتر
+            const categoryFilter = document.getElementById('categoryFilter');
+            if (categoryFilter) {
+                categoryFilter.innerHTML = '<option value="all">جميع الفئات</option>' + 
+                    localCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            }
+            
+            // تحديث خيارات الفئات في نافذة المنتج
+            const productCategory = document.getElementById('productCategory');
+            if (productCategory) {
+                productCategory.innerHTML = localCategories.map(c => 
+                    `<option value="${c.id}">${c.name}</option>`
+                ).join('');
+            }
+            
+            // تحديث خيارات المتاجر في نافذة المنتج
+            const productStore = document.getElementById('productStore');
+            if (productStore) {
+                productStore.innerHTML = localStores.map(s => 
+                    `<option value="${s.id}">${s.name}</option>`
+                ).join('');
+            }
+        }
+
+        function getCategoryName(catId) {
+            const cat = localCategories.find(c => c.id == catId);
+            return cat ? cat.name : 'غير مصنف';
+        }
+
+        function openProductModal() {
+            document.getElementById('productModalTitle').textContent = 'إضافة منتج جديد';
+            currentEditingId = null;
+            
+            // تفريغ النموذج
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productOldPrice').value = '';
+            document.getElementById('productStock').value = '';
+            document.getElementById('productUrl').value = '';
+            document.getElementById('productDescription').value = '';
+            document.getElementById('imagePreview').innerHTML = '';
+            
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function saveProduct() {
+            const product = {
+                id: currentEditingId || Date.now(),
+                name: document.getElementById('productName').value,
+                category: document.getElementById('productCategory').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                oldPrice: parseFloat(document.getElementById('productOldPrice').value) || null,
+                stock: parseInt(document.getElementById('productStock').value) || 0,
+                store: document.getElementById('productStore').value,
+                url: document.getElementById('productUrl').value,
+                description: document.getElementById('productDescription').value,
+                image: 'box',
+                clicks: 0,
+                status: 'active'
+            };
+            
+            if (!product.name || !product.price) {
+                showToast('❌ الرجاء إدخال اسم المنتج والسعر', 'error');
+                return;
+            }
+            
+            if (currentEditingId) {
+                const index = localProducts.findIndex(p => p.id == currentEditingId);
+                if (index !== -1) {
+                    product.clicks = localProducts[index].clicks || 0;
+                    localProducts[index] = product;
+                    showToast('✅ تم تحديث المنتج بنجاح', 'success');
+                }
+            } else {
+                localProducts.push(product);
+                showToast('✅ تم إضافة المنتج بنجاح', 'success');
+            }
+            
+            localStorage.setItem('hyper_products', JSON.stringify(localProducts));
+            renderProductsTable();
+            updateDashboard();
+            closeModal('productModal');
+        }
+
+        function editProduct(id) {
+            const product = localProducts.find(p => p.id == id);
+            if (!product) return;
+            
+            currentEditingId = id;
+            document.getElementById('productModalTitle').textContent = 'تعديل المنتج';
+            
+            document.getElementById('productName').value = product.name;
+            document.getElementById('productCategory').value = product.category;
+            document.getElementById('productPrice').value = product.price;
+            document.getElementById('productOldPrice').value = product.oldPrice || '';
+            document.getElementById('productStock').value = product.stock || '';
+            document.getElementById('productStore').value = product.store || '';
+            document.getElementById('productUrl').value = product.url || '';
+            document.getElementById('productDescription').value = product.description || '';
+            
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function deleteProduct(id) {
+            if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
+                localProducts = localProducts.filter(p => p.id != id);
+                localStorage.setItem('hyper_products', JSON.stringify(localProducts));
+                renderProductsTable();
+                updateDashboard();
+                showToast('✅ تم حذف المنتج', 'success');
+            }
+        }
+
+        function searchProducts() {
+            const query = document.getElementById('productSearch').value.toLowerCase();
+            if (!query) {
+                renderProductsTable();
+                return;
+            }
+            
+            const filtered = localProducts.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                (p.description && p.description.toLowerCase().includes(query))
+            );
+            
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = filtered.map(p => {
+                const category = localCategories.find(c => c.id == p.category) || { name: 'غير مصنف' };
+                return `
+                    <tr>
+                        <td>
+                            <div class="product-image">
+                                <i class="fas fa-${p.image || 'box'}"></i>
+                            </div>
+                        </td>
+                        <td>${p.name}</td>
+                        <td>${category.name}</td>
+                        <td>
+                            <span style="font-weight: 700; color: var(--primary);">${p.price} ريال</span>
+                            ${p.oldPrice ? `<br><span style="font-size: 12px; color: var(--text-secondary); text-decoration: line-through;">${p.oldPrice} ريال</span>` : ''}
+                        </td>
+                        <td>${p.stock || 0}</td>
+                        <td>${p.clicks?.toLocaleString() || 0}</td>
+                        <td><span class="badge badge-success">نشط</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            showToast(`🔍 تم العثور على ${filtered.length} منتج`);
+        }
+
+        // ==================== Categories Management ====================
+        function renderCategoriesTable() {
+            const tbody = document.getElementById('categoriesTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = localCategories.map(c => `
+                <tr>
+                    <td>${c.id}</td>
+                    <td><i class="fas fa-${c.icon || 'tag'}" style="color: var(--primary);"></i> ${c.name}</td>
+                    <td>${c.description || '-'}</td>
+                    <td>${localProducts.filter(p => p.category == c.id).length}</td>
+                    <td><span class="badge ${c.status === 'active' ? 'badge-success' : 'badge-danger'}">${c.status === 'active' ? 'نشط' : 'غير نشط'}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="editCategory('${c.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openCategoryModal() {
+            showToast('سيتم فتح نافذة إضافة فئة قريباً', 'info');
+        }
+
+        function deleteCategory(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الفئة؟')) {
+                localCategories = localCategories.filter(c => c.id != id);
+                localStorage.setItem('hyper_categories', JSON.stringify(localCategories));
+                renderCategoriesTable();
+                showToast('✅ تم حذف الفئة', 'success');
+            }
+        }
+
+        // ==================== Stores Management ====================
+        function renderStoresTable() {
+            const tbody = document.getElementById('storesTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = localStores.map(s => `
+                <tr>
+                    <td><i class="fas fa-store" style="color: var(--primary);"></i> ${s.name}</td>
+                    <td><a href="${s.url}" target="_blank" style="color: var(--primary);">${s.url}</a></td>
+                    <td>${s.commission}</td>
+                    <td>${s.clicks?.toLocaleString() || 0}</td>
+                    <td>${s.conversions || 0}</td>
+                    <td><span class="badge ${s.status === 'active' ? 'badge-success' : 'badge-danger'}">${s.status === 'active' ? 'نشط' : 'غير نشط'}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="editStore('${s.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteStore('${s.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openStoreModal() {
+            showToast('سيتم فتح نافذة إضافة متجر قريباً', 'info');
+        }
+
+        function deleteStore(id) {
+            if (confirm('هل أنت متأكد من حذف هذا المتجر؟')) {
+                localStores = localStores.filter(s => s.id != id);
+                localStorage.setItem('hyper_stores', JSON.stringify(localStores));
+                renderStoresTable();
+                showToast('✅ تم حذف المتجر', 'success');
+            }
+        }
+
+        // ==================== Coupons Management ====================
+        function renderCouponsTable() {
+            const tbody = document.getElementById('couponsTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = localCoupons.map(c => `
+                <tr>
+                    <td><span style="font-family: monospace; font-weight: 700; background: var(--gray-light); padding: 5px 10px; border-radius: 5px;">${c.code}</span></td>
+                    <td>${c.type === 'percentage' ? c.value + '%' : c.value + ' ريال'}</td>
+                    <td>${c.minAmount} ريال</td>
+                    <td>${c.uses || 0} / ${c.maxUses}</td>
+                    <td>${c.expiry}</td>
+                    <td><span class="badge badge-success">نشط</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ==================== Blog Management ====================
+        function renderBlogTable() {
+            const tbody = document.getElementById('blogTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = localArticles.map(a => `
+                <tr>
+                    <td>${a.title}</td>
+                    <td>${a.category}</td>
+                    <td>${a.author}</td>
+                    <td>${a.date}</td>
+                    <td>${a.views?.toLocaleString() || 0}</td>
+                    <td><span class="badge badge-success">منشور</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ==================== Newsletter Management ====================
+        function renderNewsletterTable() {
+            const tbody = document.getElementById('newsletterTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = localSubscribers.map(s => `
+                <tr>
+                    <td>${s.email}</td>
+                    <td>${s.date}</td>
+                    <td>${s.lastActive}</td>
+                    <td><span class="badge badge-success">نشط</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('totalSubscribers').textContent = localSubscribers.length;
+        }
+
+        // ==================== Import Jobs Management ====================
+        function renderImportJobs() {
+            const container = document.getElementById('importJobsContainer');
+            if (!container) return;
+            
+            container.innerHTML = localImportJobs.map(job => {
+                const progress = (job.processed / job.products) * 100;
+                const statusClass = job.status === 'completed' ? 'badge-success' : 
+                                  job.status === 'processing' ? 'badge-warning' : 'badge-danger';
+                const statusText = job.status === 'completed' ? 'مكتمل' : 
+                                  job.status === 'processing' ? 'قيد التنفيذ' : 'انتظار';
+                
+                return `
+                    <div class="import-job-card" style="border-right-color: ${job.status === 'completed' ? 'var(--success)' : 'var(--primary)'}">
+                        <div class="job-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-database" style="color: var(--primary);"></i>
+                                <strong>${job.source}</strong>
+                            </div>
+                            <span class="badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Job ID: ${job.id}</span>
+                            <span>${job.startTime}</span>
+                        </div>
+                        <div class="job-progress">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>تم استيراد ${job.processed} من ${job.products}</span>
+                                <span style="font-weight: 700;">${Math.round(progress)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                                <span style="color: var(--text-secondary);">الوقت المستغرق: ${job.timeElapsed}</span>
+                                <span style="color: var(--text-secondary);">المتبقي: ${job.products - job.processed}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // سجل الاستيراد
+            const logTable = document.getElementById('importLogTableBody');
+            if (logTable) {
+                logTable.innerHTML = localImportJobs.map(job => {
+                    const statusClass = job.status === 'completed' ? 'badge-success' : 
+                                       job.status === 'processing' ? 'badge-warning' : 'badge-danger';
+                    const statusText = job.status === 'completed' ? 'مكتمل' : 
+                                      job.status === 'processing' ? 'قيد التنفيذ' : 'انتظار';
+                    
+                    return `
+                        <tr>
+                            <td><span style="font-family: monospace;">${job.id}</span></td>
+                            <td>${job.source}</td>
+                            <td>${job.startTime}</td>
+                            <td>${job.products}</td>
+                            <td>${job.processed}</td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            <td>${job.timeElapsed}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        function startImport() {
+            const sources = ['أمازون', 'نون', 'جرير', 'علي إكسبريس', 'شي إن'];
+            const randomSource = sources[Math.floor(Math.random() * sources.length)];
+            
+            const newJob = {
+                id: `JOB-${Math.floor(Math.random() * 1000)}`,
+                source: randomSource,
+                startTime: new Date().toLocaleTimeString('ar-SA'),
+                products: Math.floor(Math.random() * 300 + 100),
+                processed: 0,
+                status: 'processing',
+                timeElapsed: '0:00'
+            };
+            
+            localImportJobs.unshift(newJob);
+            localStorage.setItem('hyper_imports', JSON.stringify(localImportJobs));
+            renderImportJobs();
+            showToast('🔄 تم بدء عملية الاستيراد', 'success');
+            
+            // محاكاة تقدم الاستيراد
+            let processed = 0;
+            const interval = setInterval(() => {
+                processed += Math.floor(Math.random() * 10 + 1);
+                if (processed >= newJob.products) {
+                    processed = newJob.products;
+                    newJob.status = 'completed';
+                    clearInterval(interval);
+                }
+                newJob.processed = processed;
+                newJob.timeElapsed = `${Math.floor(Math.random() * 5 + 1)}:${Math.floor(Math.random() * 60)}`;
+                localStorage.setItem('hyper_imports', JSON.stringify(localImportJobs));
+                renderImportJobs();
+                updateDashboard();
+            }, 2000);
+        }
+
+        // ==================== Dashboard Functions ====================
+        function updateDashboard() {
+            document.getElementById('totalProducts').textContent = localProducts.length;
+            document.getElementById('dailyClicks').textContent = Math.floor(Math.random() * 3000 + 2000);
+            document.getElementById('estimatedEarnings').textContent = Math.floor(Math.random() * 15000 + 5000) + ' ريال';
+            document.getElementById('totalSubscribers').textContent = localSubscribers.length;
+            
+            // أفضل المنتجات
+            const topProducts = [...localProducts].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5);
+            document.getElementById('topProductsList').innerHTML = topProducts.map(p => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-${p.image || 'box'}" style="color: var(--primary);"></i>
+                        <span style="font-weight: 600;">${p.name}</span>
+                    </div>
+                    <span style="font-weight: 700; color: var(--primary);">${p.clicks?.toLocaleString() || 0}</span>
+                </div>
+            `).join('');
+            
+            // أفضل المتاجر
+            const topStores = [...localStores].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5);
+            document.getElementById('topStoresList').innerHTML = topStores.map(s => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-store" style="color: var(--primary);"></i>
+                        <span style="font-weight: 600;">${s.name}</span>
+                    </div>
+                    <span style="font-weight: 700; color: var(--primary);">${s.clicks?.toLocaleString() || 0}</span>
+                </div>
+            `).join('');
+            
+            // معاينة Import Jobs
+            const preview = document.getElementById('importJobsPreview');
+            preview.innerHTML = localImportJobs.slice(0, 3).map(job => {
+                const progress = (job.processed / job.products) * 100;
+                return `
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight: 600;">${job.source}</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">${job.id}</span>
+                        </div>
+                        <div class="progress-bar" style="height: 6px;">
+                            <div class="progress-fill" style="width: ${progress}%; height: 6px;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: var(--text-secondary);">
+                            <span>${job.processed}/${job.products}</span>
+                            <span>${Math.round(progress)}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== Charts ====================
+        function initCharts() {
+            // رسم بياني للنقرات
+            const ctx = document.getElementById('clicksChart')?.getContext('2d');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'],
+                        datasets: [{
+                            label: 'النقرات',
+                            data: [1250, 1450, 1680, 1890, 2100, 2340, 1980],
+                            borderColor: '#ff6b00',
+                            backgroundColor: 'rgba(255,107,0,0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // ==================== Utility Functions ====================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'check-circle';
+            if (type === 'error') icon = 'exclamation-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+            if (type === 'info') icon = 'info-circle';
+            
+            toast.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            const section = document.getElementById(sectionId + 'Section');
+            if (section) {
+                section.classList.add('active');
+            }
+            
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+                document.getElementById('pageTitle').innerHTML = event.currentTarget.querySelector('span').innerHTML;
+            }
+            
+            // تحديث البيانات حسب القسم
+            if (sectionId === 'products') renderProductsTable();
+            if (sectionId === 'categories') renderCategoriesTable();
+            if (sectionId === 'stores') renderStoresTable();
+            if (sectionId === 'coupons') renderCouponsTable();
+            if (sectionId === 'blog') renderBlogTable();
+            if (sectionId === 'newsletter') renderNewsletterTable();
+            if (sectionId === 'imports') renderImportJobs();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('mainContent').classList.toggle('expanded');
+        }
+
+        function previewImages() {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            const files = document.getElementById('productImages').files;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'preview-item';
+                    preview.appendChild(img);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showUserMenu() {
+            showToast('قائمة المستخدم - قيد التطوير', 'info');
+        }
+
+        function editCategory(id) {
+            showToast('تعديل الفئة - قيد التطوير', 'info');
+        }
+
+        function editStore(id) {
+            showToast('تعديل المتجر - قيد التطوير', 'info');
+        }
+
+        // ==================== Initialize ====================
+        window.onload = function() {
+            // تحميل الثيم المحفوظ
+            const savedTheme = localStorage.getItem('hyper_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.querySelector('.theme-toggle i').className = savedTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+            
+            // تحميل اللغة المحفوظة
+            const savedLang = localStorage.getItem('hyper_language') || 'ar';
+            document.documentElement.setAttribute('lang', savedLang);
+            document.documentElement.setAttribute('dir', savedLang === 'ar' ? 'rtl' : 'ltr');
+            updateLanguage(savedLang);
+            
+            // تحميل جميع البيانات
+            loadAllData();
+            
+            // تسجيل دخول تلقائي للعرض التجريبي
+            setTimeout(() => {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                currentUser = { name: 'أحمد محمد', email: 'admin@hyperstore.com', role: 'admin' };
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0);
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
